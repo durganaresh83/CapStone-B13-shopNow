@@ -1,4 +1,4 @@
-name: Container Security Scan
+name: Backend Security Scan
 
 on:
   push:
@@ -11,25 +11,24 @@ env:
   TRIVY_EXIT_CODE: 1
 
 jobs:
-  security-scan:
+  trivy-backend:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Build Docker Image
-        run: docker build -t $IMAGE_NAME .
+      - name: Build Backend Image
+        run: |
+          docker build \
+            -t $IMAGE_NAME \
+            -f backend/Dockerfile \
+            backend
 
-      - name: Run Trivy Vulnerability Scan
+      - name: Trivy Scan (Fail on High/Critical)
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: ${{ env.IMAGE_NAME }}
           severity: ${{ env.TRIVY_SEVERITY }}
           exit-code: ${{ env.TRIVY_EXIT_CODE }}
-          format: table
           ignore-unfixed: true
-
-      - name: Push Image (Only if Scan Passes)
-        if: success()
-        run: docker push $IMAGE_NAME
