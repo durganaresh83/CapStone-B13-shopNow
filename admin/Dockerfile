@@ -1,37 +1,50 @@
-# admin/Dockerfile
 ############################
-# Stage 1: Build
+# Stage 1: Build (React)
 ############################
-FROM node:18-alpine AS builder
+FROM node:20-bookworm-slim AS builder
 WORKDIR /app
 
-RUN apk add --no-cache python3 make g++ || true
+# Install build deps only in builder
+RUN apt-get update && \
+    apt-get install -y python3 make g++ && \
+    rm -rf /var/lib/apt/lists/*
 
 COPY package*.json ./
 RUN npm ci --no-audit --prefer-offline
 
 COPY . .
-# Build argument for dynamic user path
-ARG USER_NAME=aryan
+
+# Build args
+ARG USER_NAME=adish
 ENV PUBLIC_URL=/${USER_NAME}-admin
 ENV REACT_APP_API_BASE_URL=/${USER_NAME}-admin/api
 RUN npm run build
 
 ############################
-# Stage 2: Runtime (nginx)
+# Stage 2: Runtime (Nginx)
 ############################
-FROM nginx:1.24-alpine
+FROM nginx:1.26-alpine3.20
+# Debian Bookworm → patched curl, openssl, expat, libc
 
-# Copy admin-specific nginx config included in the admin folder
+# Remove default nginx config
+RUN rm /etc/nginx/conf.d/default.conf
+
+# Copy admin nginx config
 COPY nginx/default.conf /etc/nginx/conf.d/default.conf
 
-# Copy built static admin app
+# Copy built React app
 COPY --from=builder /app/build /usr/share/nginx/html
+
+# Security hardening (non-root)
+RUN adduser --system --no-create-home --group nginxuser && \
+    chown -R nginxuser:nginxuser /usr/share/nginx/html
+
+USER nginxuser
 
 EXPOSE 80
 
-HEALTHCHECK --interval=15s --timeout=5s --start-period=5s --retries=3 \
-  CMD wget -qO- --no-check-certificate http://127.0.0.1/health || exit 1
+# Healthcheck WITHOUT curl/wget
+HEALTHCHECK --interval=15s --timeout=5s --retries=3 \
+  CMD nginx -t || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]
-
