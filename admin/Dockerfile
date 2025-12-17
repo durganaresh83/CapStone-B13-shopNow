@@ -9,13 +9,16 @@ RUN apt-get update && \
     apt-get install -y python3 make g++ && \
     rm -rf /var/lib/apt/lists/*
 
-COPY package*.json ./
-RUN npm ci --no-audit --prefer-offline
+# Copy dependency files
+COPY package.json package-lock.json* ./
+
+#Use npm install (NOT npm ci)
+RUN npm install --no-audit --prefer-offline
 
 COPY . .
 
 # Build args
-ARG USER_NAME=adish
+ARG USER_NAME=adish786
 ENV PUBLIC_URL=/${USER_NAME}-admin
 ENV REACT_APP_API_BASE_URL=/${USER_NAME}-admin/api
 RUN npm run build
