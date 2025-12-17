@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  backend:
+    image: adish786/backend:latest
+    container_name: shopnow-backend
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+    networks:
+      - shopnow-net
+
+  frontend:
+    image: adish786/frontend:latest
+    container_name: shopnow-frontend
+    restart: always
+    ports:
+      - "3001:3001"
+    depends_on:
+      - backend
+    networks:
+      - shopnow-net
+
+  admin:
+    image: adish786/admin:latest
+    container_name: shopnow-admin
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - shopnow-net
+
+networks:
+  shopnow-net:
+    driver: bridge
