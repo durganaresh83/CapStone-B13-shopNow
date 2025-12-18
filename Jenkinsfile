@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     triggers {
-       cron('* * * * *')   // optional: run every minute
+        cron('* * * * *')   // every minute (optional)
     }
 
     environment {
@@ -67,41 +67,42 @@ pipeline {
                 }
             }
         }
+
         stage('Trivy Scan + Metrics') {
-    retry(3) {
-    steps {
-        sh '''
-        docker run --rm \
-          -v $(pwd):/project \
-          aquasec/trivy fs \
-          --format json \
-          --output trivy.json \
-          /project
+            steps {
+                retry(3) {
+                    sh '''
+                        docker run --rm \
+                          -v $(pwd):/project \
+                          aquasec/trivy fs \
+                          --format json \
+                          --output trivy.json \
+                          /project
 
-        CRITICAL=$(jq '[.Results[].Vulnerabilities[] | select(.Severity=="CRITICAL")] | length' trivy.json)
-        HIGH=$(jq '[.Results[].Vulnerabilities[] | select(.Severity=="HIGH")] | length' trivy.json)
-        MEDIUM=$(jq '[.Results[].Vulnerabilities[] | select(.Severity=="MEDIUM")] | length' trivy.json)
+                        CRITICAL=$(jq '[.Results[].Vulnerabilities[]? | select(.Severity=="CRITICAL")] | length' trivy.json)
+                        HIGH=$(jq '[.Results[].Vulnerabilities[]? | select(.Severity=="HIGH")] | length' trivy.json)
+                        MEDIUM=$(jq '[.Results[].Vulnerabilities[]? | select(.Severity=="MEDIUM")] | length' trivy.json)
 
-        cat <<EOF > metrics.prom
+                        cat <<EOF > metrics.prom
 vulnerability_critical $CRITICAL
 vulnerability_high $HIGH
 vulnerability_medium $MEDIUM
 EOF
 
-        curl -X POST http://<EC2-IP>:9091/metrics/job/trivy_scan \
-          --data-binary @metrics.prom
-        '''
-    }
-    }
-}
+                        curl -X POST http://<EC2-IP>:9091/metrics/job/trivy_scan \
+                          --data-binary @metrics.prom
+                    '''
+                }
+            }
+        }
 
-        stage('Trivy File System Scan') {
+        stage('Trivy File System Scan (Gate)') {
             steps {
                 sh '''
-                    trivy fs \
-                    --severity HIGH,CRITICAL \
-                    --exit-code 1 \
-                    --format table .
+                    trivy fs . \
+                      --severity HIGH,CRITICAL \
+                      --exit-code 1 \
+                      --format table
                 '''
             }
         }
@@ -131,9 +132,9 @@ URL: ${env.BUILD_URL}
             slackSend(
                 color: 'good',
                 message: """✅ *BUILD SUCCESS*
+Deployment completed successfully 🚀
 Job: ${env.JOB_NAME}
 Build: #${env.BUILD_NUMBER}
-Deployment completed successfully 🚀
 """
             )
         }
@@ -142,9 +143,9 @@ Deployment completed successfully 🚀
             slackSend(
                 color: 'warning',
                 message: """⚠️ *BUILD UNSTABLE*
-Quality Gate failed or warnings detected
+Quality Gate failed
 Job: ${env.JOB_NAME}
-Build: #${env.BUILD_NUMBER}
+Build: ${env.BUILD_NUMBER}
 """
             )
         }
@@ -153,9 +154,9 @@ Build: #${env.BUILD_NUMBER}
             slackSend(
                 color: 'danger',
                 message: """🚨 *BUILD FAILED*
-Critical vulnerabilities or errors detected ❌
+Critical vulnerabilities detected ❌
 Job: ${env.JOB_NAME}
-Build: #${env.BUILD_NUMBER}
+Build: ${env.BUILD_NUMBER}
 Check logs immediately!
 """
             )
