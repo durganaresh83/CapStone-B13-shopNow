@@ -1,4 +1,4 @@
-name: Backend Security Scan
+name: Security Scan (Backend, Frontend, Admin)
 
 on:
   push:
@@ -6,29 +6,88 @@ on:
   pull_request:
 
 env:
-  IMAGE_NAME: adish786/backend:secure
+  BACKEND_IMAGE: adish786/backend:secure
+  FRONTEND_IMAGE: adish786/frontend:latest
+  ADMIN_IMAGE: adish786/admin:latest
+
   TRIVY_SEVERITY: HIGH,CRITICAL
   TRIVY_EXIT_CODE: 1
 
 jobs:
-  trivy-backend:
+  trivy-scan:
     runs-on: ubuntu-latest
 
     steps:
+      # -------------------------
+      # 1. Checkout Source Code
+      # -------------------------
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      # -------------------------
+      # 2. Trivy FS Scan (Code Level)
+      # -------------------------
+      - name: Trivy FS Scan (Code Level)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          severity: ${{ env.TRIVY_SEVERITY }}
+          ignore-unfixed: true
+          format: table
+
+      # =========================
+      # BACKEND
+      # =========================
       - name: Build Backend Image
         run: |
           docker build \
-            -t $IMAGE_NAME \
+            -t $BACKEND_IMAGE \
             -f backend/Dockerfile \
             backend
 
-      - name: Trivy Scan (Fail on High/Critical)
+      - name: Trivy Backend Image Scan
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: ${{ env.IMAGE_NAME }}
+          image-ref: ${{ env.BACKEND_IMAGE }}
           severity: ${{ env.TRIVY_SEVERITY }}
           exit-code: ${{ env.TRIVY_EXIT_CODE }}
           ignore-unfixed: true
+          format: table
+
+      # =========================
+      # FRONTEND
+      # =========================
+      - name: Build Frontend Image
+        run: |
+          docker build \
+            -t $FRONTEND_IMAGE \
+            -f frontend/Dockerfile \
+            frontend
+
+      - name: Trivy Frontend Image Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.FRONTEND_IMAGE }}
+          severity: ${{ env.TRIVY_SEVERITY }}
+          exit-code: ${{ env.TRIVY_EXIT_CODE }}
+          ignore-unfixed: true
+          format: table
+
+      # =========================
+      # ADMIN
+      # =========================
+      - name: Build Admin Image
+        run: |
+          docker build \
+            -t $ADMIN_IMAGE \
+            -f admin/Dockerfile \
+            admin
+
+      - name: Trivy Admin Image Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.ADMIN_IMAGE }}
+          severity: ${{ env.TRIVY_SEVERITY }}
+          exit-code: ${{ env.TRIVY_EXIT_CODE }}
+          ignore-unfixed: true
+          format: table

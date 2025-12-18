@@ -1,14 +1,33 @@
 version: "3.9"
 
 services:
-  backend:
-    image: adish786/backend:latest
+  mongo:
+    image: mongo:6
+    container_name: shopnow-mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - shopnow-net
+
+  backend-service:
+    image: adish786/backend:secure
     container_name: shopnow-backend
     restart: always
     ports:
       - "5000:5000"
     environment:
-      SPRING_PROFILES_ACTIVE: prod
+      MONGODB_URI: mongodb://mongo:27017/shopnow
+      PORT: 5000
+    depends_on:
+      - mongo
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - shopnow-net
 
@@ -17,9 +36,9 @@ services:
     container_name: shopnow-frontend
     restart: always
     ports:
-      - "3001:3001"
+      - "3001:80"
     depends_on:
-      - backend
+      - backend-service
     networks:
       - shopnow-net
 
@@ -28,12 +47,15 @@ services:
     container_name: shopnow-admin
     restart: always
     ports:
-      - "3000:3000"
+      - "3000:80"
     depends_on:
-      - backend
+      - backend-service
     networks:
       - shopnow-net
 
 networks:
   shopnow-net:
     driver: bridge
+
+volumes:
+  mongo-data:
