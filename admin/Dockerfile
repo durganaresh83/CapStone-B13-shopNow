@@ -4,50 +4,52 @@
 FROM node:20-bookworm-slim AS builder
 WORKDIR /app
 
-# Install build deps only in builder
+# Build dependencies (only in builder)
 RUN apt-get update && \
     apt-get install -y python3 make g++ && \
     rm -rf /var/lib/apt/lists/*
 
-# Copy dependency files
+# Install deps
 COPY package.json package-lock.json* ./
-
-#Use npm install (NOT npm ci)
 RUN npm install --no-audit --prefer-offline
 
+# Source
 COPY . .
 
 # Build args
 ARG USER_NAME=adish786
 ENV PUBLIC_URL=/${USER_NAME}-admin
 ENV REACT_APP_API_BASE_URL=/${USER_NAME}-admin/api
+
 RUN npm run build
 
+
 ############################
-# Stage 2: Runtime (Nginx)
+# Stage 2: Runtime (NGINX)
 ############################
 FROM nginx:1.26-alpine3.20
-# Debian Bookworm → patched curl, openssl, expat, libc
 
-# Remove default nginx config
-RUN rm /etc/nginx/conf.d/default.conf
+# 🔥 Disable default entrypoint scripts (they assume root)
+RUN rm -rf /docker-entrypoint.d/*
 
-# Copy admin nginx config
+# Copy nginx configs
+COPY nginx/nginx.conf /etc/nginx/nginx.conf
 COPY nginx/default.conf /etc/nginx/conf.d/default.conf
 
-# Copy built React app
+# Copy built app
 COPY --from=builder /app/build /usr/share/nginx/html
 
-# Security hardening (non-root)
-RUN adduser --system --no-create-home --group nginxuser && \
-    chown -R nginxuser:nginxuser /usr/share/nginx/html
+# Create non-root user
+RUN addgroup -S nginxuser \
+    && adduser -S -H -G nginxuser nginxuser \
+    && chown -R nginxuser:nginxuser \
+       /usr/share/nginx/html \
+       /var/cache/nginx \
+       /var/log/nginx \
+       /tmp
 
+# Run as non-root
 USER nginxuser
 
 EXPOSE 80
-
-# Healthcheck WITHOUT curl/wget
-HEALTHCHECK --interval=15s --timeout=5s --retries=3 \
-  CMD nginx -t || exit 1
-
 CMD ["nginx", "-g", "daemon off;"]

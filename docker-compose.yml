@@ -12,7 +12,7 @@ services:
     networks:
       - shopnow-net
 
-  backend-service:
+  backend:
     image: adish786/backend:secure
     container_name: shopnow-backend
     restart: always
@@ -29,7 +29,9 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - shopnow-net
+      shopnow-net:
+        aliases:
+          - backend-service   # ✅ K8s-style DNS
 
   frontend:
     image: adish786/frontend:latest
@@ -38,7 +40,7 @@ services:
     ports:
       - "3001:80"
     depends_on:
-      - backend-service
+      - backend
     networks:
       - shopnow-net
 
@@ -49,7 +51,7 @@ services:
     ports:
       - "3000:80"
     depends_on:
-      - backend-service
+      - backend
     networks:
       - shopnow-net
 
