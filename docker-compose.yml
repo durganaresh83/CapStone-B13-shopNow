@@ -9,6 +9,7 @@ services:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
+    command: ["mongod", "--bind_ip_all"]
     networks:
       - shopnow-net
 
@@ -31,7 +32,7 @@ services:
     networks:
       shopnow-net:
         aliases:
-          - backend-service   # ✅ K8s-style DNS
+          - backend-service
 
   frontend:
     image: adish786/frontend:latest

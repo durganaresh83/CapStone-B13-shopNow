@@ -10,8 +10,8 @@ WORKDIR /app
 RUN apk add --no-cache python3 make g++ || true
 
 # Copy package files (leverage cache)
-COPY package*.json ./
-RUN npm ci --no-audit --prefer-offline
+COPY package.json package-lock.json* ./
+RUN npm install --no-audit --prefer-offline
 
 # Copy source and build
 COPY . .
