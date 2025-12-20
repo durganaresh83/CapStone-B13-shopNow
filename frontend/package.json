@@ -31,7 +31,7 @@
   },
   "overrides": {
     "postcss": "^8.4.31",
-    "webpack-dev-server": "^5.2.1",
+    "webpack-dev-server": "^4.15.1",
     "nth-check": "^2.0.1"
   }
 }
