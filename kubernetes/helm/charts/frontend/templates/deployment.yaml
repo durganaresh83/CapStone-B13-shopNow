@@ -21,7 +21,12 @@ spec:
           ports:
             - containerPort: {{ .Values.service.port }}
           resources:
-{{ toYaml .Values.resources | indent 12 }}
+            limits:
+              cpu: {{ .Values.resources.limits.cpu | default "100m" }}
+              memory: {{ .Values.resources.limits.memory | default "128Mi" }}
+            requests:
+              cpu: {{ .Values.resources.requests.cpu | default "100m" }}
+              memory: {{ .Values.resources.requests.memory | default "128Mi" }}
           livenessProbe:
             httpGet:
               path: {{ .Values.livenessProbe.path }}
@@ -35,14 +40,14 @@ spec:
             initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
           volumeMounts:
-            {{- if .Values.nginx.enableConfigMap }}
+            {{ if .Values.nginx.enableConfigMap }}
             - name: nginx-conf
               mountPath: /etc/nginx/conf.d/default.conf
               subPath: default.conf
-            {{- end }}
+            {{ end }}
       volumes:
-        {{- if .Values.nginx.enableConfigMap }}
+        {{ if .Values.nginx.enableConfigMap }}
         - name: nginx-conf
           configMap:
             name: {{ include "frontend.fullname" . }}-nginx
-        {{- end }}
+        {{ end }}

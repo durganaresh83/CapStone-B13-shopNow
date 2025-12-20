@@ -1,9 +1,9 @@
-{{- if .Values.nginx.enableConfigMap }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ include "frontend.fullname" . }}-nginx
+{{ if .Values.nginx.enableConfigMap }}
 data:
   default.conf: |-
 {{ .Values.nginx.config | indent 4 }}
-{{- end }}
+{{ end }}

@@ -6,7 +6,7 @@ WORKDIR /app
 
 # Build dependencies (only in builder)
 RUN apt-get update && \
-    apt-get install -y python3 make g++ && \
+    apt-get install -y --no-install-recommends python3 make g++ && \
     rm -rf /var/lib/apt/lists/*
 
 # Install deps
@@ -52,4 +52,9 @@ RUN addgroup -S nginxuser \
 USER nginxuser
 
 EXPOSE 80
+
+# Healthcheck
+HEALTHCHECK --interval=15s --timeout=5s --start-period=5s --retries=3 \
+  CMD wget -qO- --no-check-certificate http://127.0.0.1/health || exit 1
+
 CMD ["nginx", "-g", "daemon off;"]

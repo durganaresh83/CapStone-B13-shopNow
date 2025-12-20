@@ -41,5 +41,8 @@ EXPOSE 80
 HEALTHCHECK --interval=15s --timeout=5s --start-period=5s --retries=3 \
   CMD wget -qO- --no-check-certificate http://127.0.0.1/health || exit 1
 
+# Switch to non-root user
+USER nginx
+
 # Run nginx in foreground
 CMD ["nginx", "-g", "daemon off;"]

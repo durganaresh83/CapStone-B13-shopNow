@@ -20,13 +20,18 @@ spec:
             - containerPort: {{ .Values.service.port }}
           envFrom:
             - configMapRef:
-                name: {{ include "backend.fullname" . }}-config
-            {{- if .Values.secret.enabled }}
+                name: '{{ include "backend.fullname" . }}-config'
+            {{ if .Values.secret.enabled }}
             - secretRef:
-                name: {{ include "backend.fullname" . }}-secret
-            {{- end }}
+                name: '{{ include "backend.fullname" . }}-secret'
+            {{ end }}
           resources:
-{{ toYaml .Values.resources | indent 12 }}
+            limits:
+              cpu: {{ .Values.resources.limits.cpu | default "100m" }}
+              memory: {{ .Values.resources.limits.memory | default "128Mi" }}
+            requests:
+              cpu: {{ .Values.resources.requests.cpu | default "100m" }}
+              memory: {{ .Values.resources.requests.memory | default "128Mi" }}
           livenessProbe:
             httpGet:
               path: /api/health

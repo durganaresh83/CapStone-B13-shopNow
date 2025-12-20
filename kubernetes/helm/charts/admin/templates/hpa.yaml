@@ -1,8 +1,8 @@
-{{- if .Values.hpa.enabled }}
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: {{ include "admin.fullname" . }}-hpa
+{{ if .Values.hpa.enabled }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
@@ -17,4 +17,4 @@ spec:
         target:
           type: Utilization
           averageUtilization: {{ .Values.hpa.targetCPUUtilizationPercentage }}
-{{- end }}
+{{ end }}
