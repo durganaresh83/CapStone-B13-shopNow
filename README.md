@@ -287,10 +287,7 @@ This assignment demonstrates a comprehensive understanding of:
 
 The implementation provides a production-ready deployment framework for MERN applications on Kubernetes with automated CI/CD pipelines.
 
-
-
-## K Mohan Krishna
-
 ---
+
 
 
