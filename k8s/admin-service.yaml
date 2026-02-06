@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: shopnow-admin
+  namespace: shopnow
+spec:
+  selector:
+    app: shopnow-admin
+  ports:
+    - port: 80
+      targetPort: 80
+  type: LoadBalancer
