@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shopnow-backend
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: shopnow-backend
+  template:
+    metadata:
+      labels:
+        app: shopnow-backend
+    spec:
+      containers:
+        - name: backend
+          image: "{{ .Values.image.backend.repository }}:{{ .Values.image.backend.tag }}"
+          ports:
+            - containerPort: {{ .Values.service.backend.port }}
+          env:
+            - name: PORT
+              value: "{{ .Values.env.backend.PORT }}"
+            - name: MONGODB_URI
+              valueFrom:
+                secretKeyRef:
+                  name: shopnow-secret
+                  key: MONGODB_URI
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: shopnow-secret
+                  key: JWT_SECRET

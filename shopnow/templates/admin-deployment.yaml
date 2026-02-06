@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shopnow-admin
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: shopnow-admin
+  template:
+    metadata:
+      labels:
+        app: shopnow-admin
+    spec:
+      containers:
+        - name: admin
+          image: "{{ .Values.image.admin.repository }}:{{ .Values.image.admin.tag }}"
+          ports:
+            - containerPort: {{ .Values.service.admin.port }}

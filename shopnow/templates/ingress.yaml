@@ -1,0 +1,39 @@
+{{- if .Values.ingress.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: shopnow-ingress
+  namespace: {{ .Values.namespace }}
+  annotations:
+{{- range $key, $value := .Values.ingress.annotations }}
+    {{ $key }}: {{ $value | quote }}
+{{- end }}
+spec:
+  ingressClassName: {{ .Values.ingress.className }}
+  rules:
+    - http:
+        paths:
+          - path: {{ .Values.ingress.paths.frontend }}
+            pathType: Prefix
+            backend:
+              service:
+                name: shopnow-frontend
+                port:
+                  number: {{ .Values.service.frontend.port }}
+
+          - path: {{ .Values.ingress.paths.admin }}
+            pathType: Prefix
+            backend:
+              service:
+                name: shopnow-admin
+                port:
+                  number: {{ .Values.service.admin.port }}
+
+          - path: {{ .Values.ingress.paths.backend }}
+            pathType: Prefix
+            backend:
+              service:
+                name: shopnow-backend
+                port:
+                  number: {{ .Values.service.backend.port }}
+{{- end }}

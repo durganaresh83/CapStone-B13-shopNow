@@ -17,7 +17,7 @@ RUN npm install --no-audit --prefer-offline
 COPY . .
 
 # Build args
-ARG USER_NAME=adish786
+ARG USER_NAME=durga
 ENV PUBLIC_URL=/${USER_NAME}-admin
 ENV REACT_APP_API_BASE_URL=/${USER_NAME}-admin/api
 
@@ -27,7 +27,7 @@ RUN npm run build
 ############################
 # Stage 2: Runtime (NGINX)
 ############################
-FROM nginx:1.26-alpine3.20
+FROM nginx:1.24-alpine
 
 # 🔥 Disable default entrypoint scripts (they assume root)
 RUN rm -rf /docker-entrypoint.d/*

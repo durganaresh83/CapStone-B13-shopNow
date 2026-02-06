@@ -1,0 +1,43 @@
+namespace: shopnow
+
+replicaCount: 1
+
+image:
+  backend:
+    repository: durga/shopnow-backend
+    tag: "latest"
+  frontend:
+    repository: durga/shopnow-frontend
+    tag: "latest"
+  admin:
+    repository: durga/shopnow-admin
+    tag: "latest"
+
+service:
+  backend:
+    port: 5000
+  frontend:
+    port: 80
+  admin:
+    port: 80
+
+env:
+  backend:
+    PORT: "5000"
+    MONGODB_URI: "mongodb+srv://durganaresh:Naresh4130@cluster.region.mongodb.net/shopnow"
+    JWT_SECRET: "shopnow-secret"
+
+ingress:
+  enabled: true
+  className: alb
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/group.name: shopnow
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
+    alb.ingress.kubernetes.io/healthcheck-path: /api/health
+    alb.ingress.kubernetes.io/success-codes: "200-399"
+  paths:
+    frontend: /
+    admin: /admin
+    backend: /api

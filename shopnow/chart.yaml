@@ -1,0 +1,6 @@
+apiVersion: v2
+name: shopnow
+description: ShopNow MERN Stack Helm Chart (EKS + ALB)
+type: application
+version: 1.0.0
+appVersion: "1.0"
