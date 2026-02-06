@@ -15,6 +15,6 @@ spec:
     spec:
       containers:
         - name: admin
-          image: imran7012/shopnow-admin:latest
+          image: durga/shopnow-admin:latest
           ports:
             - containerPort: 80
