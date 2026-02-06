@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shopnow-frontend
+  namespace: shopnow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shopnow-frontend
+  template:
+    metadata:
+      labels:
+        app: shopnow-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: durga/shopnow-frontend:latest
+          ports:
+            - containerPort: 80
