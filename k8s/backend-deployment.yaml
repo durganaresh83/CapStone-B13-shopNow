@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shopnow-backend
+  namespace: shopnow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shopnow-backend
+  template:
+    metadata:
+      labels:
+        app: shopnow-backend
+    spec:
+      containers:
+        - name: backend
+          image: durga/shopnow-backend:latest
+          ports:
+            - containerPort: 5000
+          env:
+            - name: PORT
+              value: "5000"
+            - name: MONGODB_URI
+              valueFrom:
+                secretKeyRef:
+                  name: shopnow-secret
+                  key: MONGODB_URI
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: shopnow-secret
+                  key: JWT_SECRET
