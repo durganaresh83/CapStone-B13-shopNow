@@ -167,7 +167,7 @@ Table of Content
 
 ## 
 
-## Executive Summary {#executive-summary}
+# Executive Summary {#executive-summary}
 
 This capstone project focuses on building an automated **container image vulnerability scanning and reporting system** using modern DevSecOps tools. The solution integrates Trivy for security scanning, Jenkins for CI/CD automation, and monitoring tools like Prometheus and Grafana for real-time insights.
 
