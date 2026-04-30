@@ -206,7 +206,8 @@ With the rise in containerized applications, securing container images is critic
 
 ## Proposed Solution / Architecture
 
-![][image1]
+<img width="512" height="226" alt="image" src="https://github.com/user-attachments/assets/16a76afc-048e-4c67-8ab7-3e97829e7779" />
+
 
 ## 
 
